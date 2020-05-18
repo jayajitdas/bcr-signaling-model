@@ -1,0 +1,97 @@
+region patch1
+   move 0 0 0
+    box width 1 height 1 depth 1
+region patch2
+   move 0 1.4 0
+    box width 1 height 1 depth 1
+
+
+region periphery1
+ diff
+  union
+   move 0 0 0
+    cylinder radius 1.5 height 1
+   move 0 1.4 0
+    cylinder radius 1.5 height 1
+  union
+   move 0 0 0
+    box width 1 height 1 depth 1
+   move 0 1.4 0
+    box width 1 height 1 depth 1
+subvolume edge 0.5
+
+new APC at denapc1 in patch1
+new APC at denapc2 in patch2
+new BCR(phos=0) at denbcr1 in periphery1
+new Lyn at denlyn
+new SHIP at denship 
+new Syk at densyk
+
+diffusion BCR(groove#) at kdeffplasma
+diffusion Lyn(SH2#) at kdeffplasma
+diffusion Syk(SH2#) at kdeffcy
+diffusion SHIP(gamma#) at kdeffcy
+
+----------------------- BCR APC interaction no kinetic proof reading--------------------------------------------
+
+rxn L:APC(cleft#) R:BCR(groove#) at konapc -> L.cleft # R.groove
+rxn L:APC(cleft#1)BCR(groove#1) at koffapc -> break 1
+
+--------------------------  Lyn recruitment and phosphorylation   ------------------------------
+
+rxn L:Lyn(SH2#)R:BCR(cytos#,phos=0) at konlyn -> L.SH2 # R.cytos
+rxn L:Lyn(SH2#1)BCR(groove#_,cytos#1) at kofflyn -> break 1
+rxn L:Lyn(SH2#1)BCR(groove#,cytos#1) at kofflyn2 -> break 1
+
+rxn Lyn(SH2#1)L:BCR(cytos#1,phos=0) at kphoslyn -> L.phos=1
+rxn Lyn(SH2#1)L:BCR(cytos#1,phos=1) at kphoslyn -> L.phos=2;break 1
+
+
+--------------------------- Syk binding -----------------------------------------------------------------
+
+rxn L:Syk(SH2#) R:BCR(cytos#,phos=1) at konsyk -> L.SH2 # R.cytos
+rxn L:Syk(SH2#) R:BCR(cytos#,phos=2) at konsyk1 -> L.SH2 # R.cytos
+
+rxn L:Syk(SH2#1)BCR(groove#_,cytos#1,phos=1) at koffsyk -> break 1
+rxn L:Syk(SH2#1)BCR(groove#_,cytos#1,phos=2) at koffsyk1 -> break 1
+
+rxn L:Syk(SH2#1)BCR(groove#,cytos#1,phos=1) at koffsyk_no_antigen -> break 1
+rxn L:Syk(SH2#1)BCR(groove#,cytos#1,phos=2) at koffsyk1_no_antigen -> break 1
+
+rxn Syk(SH2#1)L:BCR(cytos#1,phos=1) at kforward -> L.phos=2
+
+
+---------------------------Syk positive feedback --------------------------------------------------------------
+rxn Syk(SH2#1)BCR(cytos#1)L:BCR(cytos#,phos=0) at kforward1 -> L.phos=1
+rxn Syk(SH2#1)BCR(cytos#1)L:BCR(cytos#,phos=1) at kforward1 -> L.phos=2
+
+----------------------------- Deactivation------------------------------------------------------------
+
+
+rxn L:SHIP(gamma#) R:BCR(cytos#,phos=1) at konship -> L.gamma # R.cytos
+rxn L:SHIP(gamma#) R:BCR(cytos#,phos=2) at konship1 -> L.gamma # R.cytos
+
+
+rxn L:SHIP(gamma#1)BCR(cytos#1,phos=1) at koffship -> break 1
+rxn L:SHIP(gamma#1)BCR(cytos#1,phos=2) at koffship1 -> break 1
+
+
+rxn SHIP(gamma#1)L:BCR(cytos#1,phos=1) at krevship -> L.phos=0;break 1
+rxn SHIP(gamma#1)L:BCR(cytos#1,phos=2) at krevship -> L.phos=1
+
+
+--rxn L:BCR(cytos#,phos=2) at koffitam -> L.phos=1
+--rxn L:BCR(cytos#,phos=1) at koffitam -> L.phos=0
+
+
+--rxn L:BCR(groove#_,cytos#,phos=0) at konitam -> L.phos=1
+
+
+
+
+
+record APC(cleft#_)
+record BCR(groove#)
+record BCR(phos=1)
+record BCR(phos=2)
+record Syk(SH2#_)
